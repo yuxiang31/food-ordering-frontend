@@ -1,0 +1,96 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 12px 22px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    transform 0.15s;
+  text-decoration: none;
+}
+.primary {
+  background: var(--primary);
+  color: white;
+}
+.primary:hover {
+  background: var(--primary-hover);
+}
+.secondary {
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+.secondary:hover {
+  background: var(--background);
+}
+.quiet {
+  background: transparent;
+  color: var(--primary);
+  padding: 10px 12px;
+}
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.quantity {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  height: 44px;
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.quantity button {
+  border: 0;
+  background: transparent;
+  width: 44px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--text);
+  border-radius: 9px;
+}
+.quantity button:hover:not(:disabled) {
+  background: var(--accent-light);
+}
+.quantity button:disabled {
+  color: var(--muted);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.quantity output {
+  min-width: 24px;
+  text-align: center;
+  font-weight: 700;
+}
+.state {
+  text-align: center;
+  padding: 70px 20px;
+  max-width: 550px;
+  margin: auto;
+}
+.state h2 {
+  font-size: 26px;
+  margin: 18px 0 12px;
+}
+.state p {
+  color: var(--muted);
+  margin-bottom: 24px;
+}
+.stateIcon {
+  width: 76px;
+  height: 76px;
+  background: var(--accent-light);
+  color: var(--primary);
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+}

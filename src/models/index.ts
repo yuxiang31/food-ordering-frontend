@@ -27,6 +27,7 @@ export interface OptionGroup {
   id: string;
   name: string;
   required: boolean;
+  selection: 'single' | 'multiple';
   options: FoodOption[];
 }
 export interface MenuItem {

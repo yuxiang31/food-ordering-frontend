@@ -13,6 +13,84 @@ function mount(path = '/', services = createMockServices({ latency: 0 })) {
   );
 }
 describe('ordering experience', () => {
+  it('prices multiple extras, restores them after reload, and edits individual choices', async () => {
+    const user = userEvent.setup();
+    const view = mount('/food/burger');
+    await screen.findByRole('heading', { name: 'The Classic Smash' });
+    const cheese = screen.getByRole('checkbox', { name: /Extra cheese/ });
+    const patty = screen.getByRole('checkbox', { name: /Extra beef patty/ });
+    await user.click(cheese);
+    await user.click(patty);
+    expect(cheese).toBeChecked();
+    expect(patty).toBeChecked();
+    expect(
+      screen.getByRole('button', { name: /Add to cart/ }),
+    ).toHaveTextContent('RM 33.90');
+    await user.click(patty);
+    expect(cheese).toBeChecked();
+    expect(
+      screen.getByRole('button', { name: /Add to cart/ }),
+    ).toHaveTextContent('RM 27.40');
+    await user.click(patty);
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Increase quantity for The Classic Smash',
+      }),
+    );
+    await user.click(screen.getByRole('button', { name: /Add to cart/ }));
+    await user.click(screen.getByRole('link', { name: 'Review your cart →' }));
+    const group = await screen.findByRole('region', { name: 'The Good Bun' });
+    expect(
+      within(group).getByText('Extra cheese · Extra beef patty'),
+    ).toBeInTheDocument();
+    expect(within(group).getByText('RM 72.80')).toBeInTheDocument();
+    view.unmount();
+    mount('/cart');
+    const restored = await screen.findByRole('region', {
+      name: 'The Good Bun',
+    });
+    expect(
+      within(restored).getByText('Extra cheese · Extra beef patty'),
+    ).toBeInTheDocument();
+    await user.click(
+      within(restored).getByRole('link', { name: 'Edit options' }),
+    );
+    expect(
+      screen.getByRole('checkbox', { name: /Extra cheese/ }),
+    ).toBeChecked();
+    expect(
+      screen.getByRole('checkbox', { name: /Extra beef patty/ }),
+    ).toBeChecked();
+    await user.click(screen.getByRole('checkbox', { name: /Extra cheese/ }));
+    await user.click(screen.getByRole('button', { name: /Update item/ }));
+    await user.click(screen.getByRole('link', { name: 'Review your cart →' }));
+    const edited = await screen.findByRole('region', { name: 'The Good Bun' });
+    expect(within(edited).getByText('Extra beef patty')).toBeInTheDocument();
+    expect(within(edited).getByText('RM 67.80')).toBeInTheDocument();
+    expect(within(edited).queryByText(/Extra cheese/)).not.toBeInTheDocument();
+    expect(within(edited).getAllByRole('article')).toHaveLength(1);
+  });
+  it('combines a single pizza size with multiple independently selected toppings', async () => {
+    const user = userEvent.setup();
+    mount('/food/pizza');
+    await screen.findByRole('heading', { name: 'Margherita, Made Right' });
+    await user.click(screen.getByRole('radio', { name: /12 inch/ }));
+    await user.click(screen.getByRole('checkbox', { name: /Mushrooms/ }));
+    await user.click(screen.getByRole('checkbox', { name: /Olives/ }));
+    expect(screen.getByRole('radio', { name: /10 inch/ })).not.toBeChecked();
+    expect(screen.getByRole('radio', { name: /12 inch/ })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /Mushrooms/ })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /Olives/ })).toBeChecked();
+    expect(
+      screen.getByRole('button', { name: /Add to cart/ }),
+    ).toHaveTextContent('RM 40.40');
+    await user.click(screen.getByRole('checkbox', { name: /Olives/ }));
+    expect(screen.getByRole('radio', { name: /12 inch/ })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /Mushrooms/ })).toBeChecked();
+    expect(
+      screen.getByRole('button', { name: /Add to cart/ }),
+    ).toHaveTextContent('RM 38.90');
+  });
   it('provides a clear page heading and recovery link for missing food', async () => {
     mount('/food/missing');
     expect(
@@ -45,12 +123,15 @@ describe('ordering experience', () => {
     );
     mount('/food/burger?edit=burger%3A');
     await screen.findByRole('heading', { name: 'The Classic Smash' });
-    await user.click(screen.getByRole('radio', { name: /Extra cheese/ }));
+    await user.click(screen.getByRole('checkbox', { name: /Extra cheese/ }));
     await user.click(screen.getByRole('button', { name: /Update item/ }));
     expect(
       screen.getByRole('button', { name: /Saved to cart/ }),
     ).toBeDisabled();
-    await user.click(screen.getByRole('radio', { name: /Extra beef patty/ }));
+    await user.click(
+      screen.getByRole('checkbox', { name: /Extra beef patty/ }),
+    );
+    await user.click(screen.getByRole('checkbox', { name: /Extra cheese/ }));
     await user.click(screen.getByRole('button', { name: /Update item/ }));
     await user.click(screen.getByRole('link', { name: 'Review your cart →' }));
     const group = await screen.findByRole('region', { name: 'The Good Bun' });
@@ -95,7 +176,7 @@ describe('ordering experience', () => {
     const user = userEvent.setup();
     mount('/food/burger');
     await screen.findByRole('heading', { name: 'The Classic Smash' });
-    await user.click(screen.getByRole('radio', { name: /Extra cheese/ }));
+    await user.click(screen.getByRole('checkbox', { name: /Extra cheese/ }));
     await user.click(
       screen.getByRole('button', {
         name: 'Increase quantity for The Classic Smash',

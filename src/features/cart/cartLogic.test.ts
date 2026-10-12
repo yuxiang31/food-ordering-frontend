@@ -14,6 +14,41 @@ const catalog = { categories, menuItems, restaurants };
 const burger = menuItems.find((item) => item.id === 'burger')!;
 const cake = menuItems.find((item) => item.id === 'cake')!;
 describe('multi-restaurant cart', () => {
+  it('preserves and prices combined extras, merging equivalent selection order', () => {
+    const first = makeCartItem(burger, 1, ['cheese', 'patty']);
+    const reversed = makeCartItem(burger, 1, ['patty', 'cheese']);
+    const cart = cartReducer(
+      { items: [first] },
+      { type: 'add', item: reversed },
+    );
+    expect(cart.items).toHaveLength(1);
+    const restored = reconcileCart(
+      readStoredCart(JSON.stringify({ version: 1, items: cart.items })),
+      catalog,
+    );
+    const group = groupCart(restored, catalog, 'delivery')[0];
+    expect(group.items[0].options.map((option) => option.id)).toEqual([
+      'cheese',
+      'patty',
+    ]);
+    expect(group.items[0].unitPrice).toBe(3390);
+    expect(group.total).toBe(7280);
+  });
+  it('requires at least one choice in required multiple groups and rejects duplicate or unknown options', () => {
+    const requiredExtras = {
+      ...burger,
+      optionGroups: burger.optionGroups.map((group) => ({
+        ...group,
+        required: true,
+      })),
+    };
+    expect(validOptions(requiredExtras, [])).toBe(false);
+    expect(validOptions(requiredExtras, ['cheese'])).toBe(true);
+    expect(validOptions(requiredExtras, ['cheese', 'patty'])).toBe(true);
+    expect(validOptions(requiredExtras, ['cheese', 'cheese'])).toBe(false);
+    expect(validOptions(requiredExtras, ['cheese', 'invented'])).toBe(false);
+    expect(validOptions(burger, [])).toBe(true);
+  });
   it('normalises persisted keys so restored selections remain editable and removable', () => {
     const entry = makeCartItem(burger, 1, ['cheese']);
     const cart = readStoredCart(
@@ -107,7 +142,8 @@ describe('multi-restaurant cart', () => {
       }),
     ).toEqual(cart);
     expect(() => makeCartItem(burger, 1.5, [])).toThrow();
-    expect(validOptions(burger, ['cheese', 'patty'])).toBe(false);
+    expect(validOptions(burger, ['cheese', 'patty'])).toBe(true);
+    expect(validOptions(menuItems[0], ['mild', 'hot'])).toBe(false);
     expect(validOptions(menuItems[0], [])).toBe(false);
     expect(validOptions(menuItems[0], ['mild', 'mild'])).toBe(false);
   });

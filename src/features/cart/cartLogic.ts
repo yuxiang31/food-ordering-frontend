@@ -21,7 +21,8 @@ export function validOptions(item: MenuItem, ids: string[]) {
       const selected = group.options.filter((option) =>
         ids.includes(option.id),
       ).length;
-      return group.required ? selected === 1 : selected <= 1;
+      if (group.required && selected === 0) return false;
+      return group.selection === 'multiple' || selected <= 1;
     })
   );
 }

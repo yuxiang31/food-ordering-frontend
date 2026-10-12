@@ -3,6 +3,7 @@ const spice: OptionGroup = {
   id: 'spice',
   name: 'Spice level',
   required: true,
+  selection: 'single',
   options: [
     { id: 'mild', label: 'Mild', price: 0 },
     { id: 'regular', label: 'Regular', price: 0 },
@@ -13,6 +14,7 @@ const burger: OptionGroup = {
   id: 'burger-extra',
   name: 'Make it yours',
   required: false,
+  selection: 'multiple',
   options: [
     { id: 'cheese', label: 'Extra cheese', price: 250 },
     { id: 'patty', label: 'Extra beef patty', price: 650 },
@@ -70,6 +72,7 @@ export const menuItems: MenuItem[] = [
         id: 'dressing',
         name: 'Your dressing',
         required: true,
+        selection: 'single',
         options: [
           { id: 'tahini', label: 'Lemon tahini', price: 0 },
           { id: 'balsamic', label: 'Balsamic vinaigrette', price: 0 },
@@ -96,9 +99,21 @@ export const menuItems: MenuItem[] = [
         id: 'pizza-size',
         name: 'Pizza size',
         required: true,
+        selection: 'single',
         options: [
           { id: 'small', label: '10 inch', price: 0 },
           { id: 'large', label: '12 inch', price: 800 },
+        ],
+      },
+      {
+        id: 'pizza-toppings',
+        name: 'Extra toppings',
+        required: false,
+        selection: 'multiple',
+        options: [
+          { id: 'mushrooms', label: 'Mushrooms', price: 200 },
+          { id: 'olives', label: 'Olives', price: 150 },
+          { id: 'jalapenos', label: 'Jalapeños', price: 100 },
         ],
       },
     ],

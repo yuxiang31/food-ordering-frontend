@@ -80,7 +80,7 @@ function FoodDetails({
   const [selected, setSelected] = useState<string[]>(
     existing?.optionIds ??
       item.optionGroups
-        .filter((group) => group.required)
+        .filter((group) => group.required && group.selection === 'single')
         .map((group) => group.options[0].id),
   );
   const [error, setError] = useState('');
@@ -92,17 +92,25 @@ function FoodDetails({
   const total = (item.price + optionsTotal) * quantity;
   const choose = (groupId: string, optionId: string) => {
     const group = item.optionGroups.find((group) => group.id === groupId)!;
-    setSelected((current) => [
-      ...current.filter(
-        (id) => !group.options.some((option) => option.id === id),
-      ),
-      ...(optionId ? [optionId] : []),
-    ]);
+    setSelected((current) => {
+      if (group.selection === 'multiple') {
+        return current.includes(optionId)
+          ? current.filter((id) => id !== optionId)
+          : [...current, optionId];
+      }
+      return [
+        ...current.filter(
+          (id) => !group.options.some((option) => option.id === id),
+        ),
+        ...(optionId ? [optionId] : []),
+      ];
+    });
+    setError('');
     setAdded(false);
   };
   const add = () => {
     if (!validOptions(item, selected)) {
-      setError('Please choose an option for each required group.');
+      setError('Please complete the required option selections.');
       return;
     }
     cart.add(item, quantity, selected, existing ? currentEditKey : undefined);
@@ -164,12 +172,15 @@ function FoodDetails({
               <legend>
                 {group.name}{' '}
                 <span>
-                  {group.required
-                    ? 'Required · Choose one'
-                    : 'Optional · Choose one'}
+                  {group.required ? 'Required' : 'Optional'} ·{' '}
+                  {group.selection === 'single'
+                    ? 'Choose one'
+                    : group.required
+                      ? 'Choose at least one'
+                      : 'Choose any'}
                 </span>
               </legend>
-              {!group.required && (
+              {!group.required && group.selection === 'single' && (
                 <label className={styles.option}>
                   <input
                     type="radio"
@@ -187,7 +198,7 @@ function FoodDetails({
               {group.options.map((option) => (
                 <label key={option.id} className={styles.option}>
                   <input
-                    type="radio"
+                    type={group.selection === 'multiple' ? 'checkbox' : 'radio'}
                     name={group.id}
                     checked={selected.includes(option.id)}
                     onChange={() => choose(group.id, option.id)}

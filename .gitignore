@@ -7,3 +7,5 @@ coverage/
 test-results/
 .pnpm-store/
 *.tsbuildinfo
+README(private).md
+docs/validation.md
